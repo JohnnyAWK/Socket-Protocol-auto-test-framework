@@ -35,7 +35,11 @@ public class SevenQProtocol implements IProtocol {
 			
 			return PackageCreater.createPackage((byte)0, param);
 
-		} else {
+		} 
+		else if (TypeInfoParser.isByteArray(params)) {
+			return (byte[]) params;
+		}
+		else {
 			throw new IllegalArgumentException("param is not a map type");
 		}
 	}
@@ -64,10 +68,13 @@ public class SevenQProtocol implements IProtocol {
 	@Override
 	public Integer getCmd(Object obj) {
 		if (TypeInfoParser.isMap(obj)) {
+			
 			@SuppressWarnings("unchecked")
 			Map<String, Object> temp = (Map<String, Object>) obj;
+
+			Integer cmd = (Integer) temp.get("cmd");
 			
-			return (Integer) temp.get("cmd");
+			return cmd != null? cmd: (Integer)temp.get("Cmd");
 		}
 		else {
 			return 0;

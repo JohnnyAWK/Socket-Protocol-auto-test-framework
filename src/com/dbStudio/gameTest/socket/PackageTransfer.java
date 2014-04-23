@@ -29,7 +29,6 @@ public class PackageTransfer{
 	
 	private final ConcurrentLinkedQueue<byte[]> handledQueue;
 	
-	
 	public PackageTransfer(String host, int port) {
 		checkPort(port);
 		
@@ -101,6 +100,10 @@ public class PackageTransfer{
 	
 	public boolean isQueueEmpty() {
 		return handledQueue.isEmpty();
+	}
+	
+	public int getReceivedPkgCount() {
+		return handledQueue.size();
 	}
 	
 	private volatile boolean stopReceive = false;

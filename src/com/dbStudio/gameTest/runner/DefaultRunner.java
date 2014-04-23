@@ -48,7 +48,6 @@ public class DefaultRunner {
 		port = Integer.parseInt(cfg.get("port"));
 		
 		mProtocol = (IProtocol) protocolDict.get(cfg.get("protocol"));
-
 	}
 	
 	public static DefaultRunner createRunner() {
@@ -120,30 +119,35 @@ public class DefaultRunner {
 	
 	private final Object receiveDataOrBlocking(Integer cmd){
 		while(true){
-			/**先获取一个包*/
+			/**先取一个包*/
 			byte[] pkg = mSocket.getHandledPackage();
+			
 			if(pkg == null){
 				Sleeper.sleepSomeMilliseconds(50);
 				continue;
 			}
 			else {
-				/**获取cmd，并把数据解码*/
-				Integer cmdTemp = mProtocol.getCmd(pkg);
-				/**如果解析不出CMD，说明数据包已损坏*/
-				if(cmdTemp == null)
-					continue;
+				/**解码数据*/
+				Object decodedData = mProtocol.decode(pkg);
 				
-				Object data = mProtocol.decode(pkg);
-				/**添加到缓存*/
-				addCache(cmdTemp, data);
-					
+				/**获取cmd*/
+				Integer cmdTemp = mProtocol.getCmd(decodedData);
+				
+				/**如果解析不出CMD，说明数据包已损坏*/	
+				if(cmdTemp == null) {
+					continue;
+				}
+				
+				/**先添加到缓存，保证每个包都能被缓存*/
+				addCache(cmdTemp, decodedData);
+				
+				/**再判断这个包是不是我们需要的，是的话，就返回*/
 				if(cmd.equals(cmdTemp)) {
-					return data;
+					return decodedData;
 				}
 
 				Sleeper.sleepSomeMilliseconds(50);
-				continue;	
-				
+				continue;				
 			}
 		}
 	}
@@ -152,6 +156,7 @@ public class DefaultRunner {
 		final long time = System.currentTimeMillis() + timeout;
 		
 		while(System.currentTimeMillis() < time){
+			/**先取一个包*/
 			byte[] pkg = mSocket.getHandledPackage();
 			
 			if(pkg == null){
@@ -159,14 +164,23 @@ public class DefaultRunner {
 				continue;
 			}
 			else {
+				/**解码数据*/
+				Object decodedData = mProtocol.decode(pkg);
 				
-				Integer cmdTemp = mProtocol.getCmd(pkg);
-				Object data = mProtocol.decode(pkg);
-					
-				addCache(cmdTemp, data);
-					
+				/**获取cmd*/
+				Integer cmdTemp = mProtocol.getCmd(decodedData);
+				
+				/**如果解析不出CMD，说明数据包已损坏*/	
+				if(cmdTemp == null) {
+					continue;
+				}
+				
+				/**先添加到缓存，保证每个包都能被缓存*/
+				addCache(cmdTemp, decodedData);
+				
+				/**再判断这个包是不是我们需要的，是的话，就返回*/
 				if(cmd.equals(cmdTemp)) {
-					return data;
+					return decodedData;
 				}
 
 				Sleeper.sleepSomeMilliseconds(50);
@@ -183,11 +197,12 @@ public class DefaultRunner {
 	 * @return 解码后的数据
 	 */
 	public Object getDataOrBlocking(Integer cmd) {
-		if(isCached(cmd)) {
-			return getFromCache(cmd);
+		Object ret = null;
+		if( (ret = receiveDataOrBlocking(cmd)) != null ) {
+			return ret;
 		}
 		else {
-			return receiveDataOrBlocking(cmd);
+			return isCached(cmd)? getFromCache(cmd) : null;
 		}
 	}
 	
@@ -198,12 +213,14 @@ public class DefaultRunner {
 	 * @return 获取到数据后返回，超时获取返回null
 	 */
 	public Object getDataOrBlocking(Integer cmd, long timeoutInMills) {
-		if(isCached(cmd)) {
-			return getFromCache(cmd);
+		/**先从socket取，取不到才读缓存*/
+		Object ret = null;
+		if( (ret = receiveDataOrBlockingUtilTimeout(cmd, timeoutInMills)) != null ) {
+			return ret;
 		}
 		else {
-			return receiveDataOrBlockingUtilTimeout(cmd, timeoutInMills);
-		}
+			return isCached(cmd)? getFromCache(cmd) : null;
+		}	
 	}
 	
 	/***
@@ -213,16 +230,33 @@ public class DefaultRunner {
 		mSocket.close();
 	}
 	
+	/***
+	 * 添加缓存
+	 * @param cmd
+	 * @param data
+	 * 
+	 * 注：如果已经存在，则用新的值覆盖老的值
+	 */
 	private final void addCache(Integer cmd, Object data) {
-		if((cmd != null) && !isCached(cmd) ){
+		if((cmd != null)){
 			pkgsCache.put(cmd, data);
 		}
 	}
 	
+	/***
+	 * 查询是否有缓存
+	 * @param cmd 需要查询的cmd
+	 * @return 有缓存返回true，否则返回false
+	 */
 	private final boolean isCached(Integer cmd) {
 		return pkgsCache.containsKey(cmd);
 	}
 	
+	/***
+	 * 从缓存取
+	 * @param cmd
+	 * @return
+	 */
 	private Object getFromCache(Integer cmd) {
 		return pkgsCache.get(cmd);
 	}
