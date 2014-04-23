@@ -7,14 +7,14 @@ import java.util.Properties;
 
 public final class ConfigManager {
 	/**女妖测试服IP*/
-	public final static String NVYAO_TEST_SERVER_IP_ADD = "115.238.230.19";
+	public final static String NVYAO_TEST_SERVER_IP_ADD =;
 	/**女妖测试服端口*/
-	public final static int NVYAO_TEST_SERVER_PORT = 48020;
+	public final static int NVYAO_TEST_SERVER_PORT = ;
 	
 	/**七雄线上服地址*/
-	public final static String SEVEN_Q_ONLINE_SERVER = "7q.login.game.uc.cn";
+	public final static String SEVEN_Q_ONLINE_SERVER = ;
 	/**七雄线上服端口*/
-	public final static int SEVEN_Q_ONLINE_SERVER_PORT = 8002;
+	public final static int SEVEN_Q_ONLINE_SERVER_PORT = ;
 	
 	private final File configFile;
 	
