@@ -13,9 +13,8 @@ public class FileUtil {
 	 * @return
 	 */
 	public static boolean isValidFile(String file) {
-		File f = new File(file);
-		
-		return f.exists()? f.isFile() : false;
+
+		return isValidFile(new File(file));
 	}
 	
 	/***
