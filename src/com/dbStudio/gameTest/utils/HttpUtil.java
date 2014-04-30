@@ -33,7 +33,7 @@ public class HttpUtil {
 	 * Post方法调用接口
 	 * @param url				待测试接口的地址
 	 * @param paramList			传递的参数
-	 * @return					调用成功返回字符�?
+	 * @return					调用成功返回字符串
 	 * 							调用失败返回null
 	 * @throws IOException
 	 */
@@ -100,8 +100,8 @@ public class HttpUtil {
     /**
      * Get方法调用接口
      * @param baseUrl				不含参数的Url
-     * @param params				�?��传�?给url的参�?
-     * @return						返回字符�?
+     * @param params				传递给接口的参数
+     * @return						调用成功返回字符串
      * @throws IOException
      */
     public static String doGet(String baseUrl, List<NameValuePair> params) throws IOException{
@@ -118,7 +118,7 @@ public class HttpUtil {
     }
     
     /**
-     * get方法的另�?��形式，支持Map参数
+     * 重载方法
      * @param baseUrl
      * @param params
      * @return
@@ -179,7 +179,7 @@ public class HttpUtil {
 	}
     
     /**
-     * 该方法实用与get方法，组装url和参数，拼接成最终调用地�?��url
+     * 该方法实用与get方法，组装url和参数，拼接成最终调用的url
      * @param baseUrl				不含参数的url地址
      * @param params				传给接口的参数	
      * @return						返回调用接口的完整url地址
