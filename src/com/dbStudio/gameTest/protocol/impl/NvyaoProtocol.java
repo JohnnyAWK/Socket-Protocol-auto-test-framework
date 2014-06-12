@@ -28,23 +28,6 @@ public class NvyaoProtocol implements IProtocol{
 	
 	/**数据段在字节数组中的起始索引*/
 	static final int DATA_START_POS = L_LENGTH + CMD_LENGTH + ZIP_LENGTH;
-	
-	/***
-	 * 客户端发送的格式为:
-	 * L:int16, Cmd:int16, Data
-	 * 		2		2
-	 * 
-	 * 
-	 * 
-	 * 服务器返回的格式为:
-	 * L:int16, Cmd:int16, Zip:int8, Data
-	 * 		2		2			1
-	 * 
-	 * L	代表整条协议的长度(注意:不算入L本身的长度！这点和醉西游不同)
-	 * Cmd	代表协议号
-	 * Zip	代表协议是否压缩(1:代表压缩过, 0:代表未压缩)
-	 * Data	代表协议的数据主体
-	 * */
 
 	@Override
 	public byte[] encode(Object sendData) {
