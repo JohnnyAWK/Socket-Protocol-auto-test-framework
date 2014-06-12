@@ -20,40 +20,53 @@ public class DBUtils {
 	/**oracle driver*/
 	private static final String ORACLE_DRIVER = "oracle.jdbc.driver.OracleDriver";
 	
-	private static String IP;
-	private static String PORT;
-	private static String DB_INSTANCE;
-	private static String USER_NAME;
-	private static String PWD;
-	
-	static {
-		ConfigManager config =  ConfigManager.getCongfig(new File("E:\\jdbc.properties"));
-		IP = config.get("ip");
-		PORT = config.get("port");
-		DB_INSTANCE = config.get("instance");
-		USER_NAME = config.get("username");
-		PWD = config.get("password");
-	}
-	
-	private static DBUtils instance;
-	
 	private String mUrl;
+	
+	private String username;
+	
+	private String password;
+	
+	private static DBUtils DB_instance;
+
 	private Connection mConn;
 	
-	private DBUtils(String dbType) {
+	private DBUtils(File config, String dbType) {
 		loadDriver(dbType);
-		mUrl = createUrl(dbType, IP, PORT, DB_INSTANCE);
+		loadConfig(config);
 	}
 	
-	public static DBUtils createInstance(String dbType) {
-		if(instance == null) {
+	private DBUtils(String ip, String port, String instance, String dbType) {
+		loadDriver(dbType);
+		mUrl = createUrl(dbType, ip, port, instance);
+	}
+	
+	private final void loadConfig(File configFile) {
+		ConfigManager config =  ConfigManager.getCongfigManager(configFile);
+		mUrl = config.get("url");
+		username = config.get("username");
+		password = config.get("password");
+	}
+	
+	public static DBUtils createInstance(File configFile, String dbType) {
+		if(DB_instance == null) {
 			synchronized (DBUtils.class) {
-				if(instance == null) {
-					instance = new DBUtils(dbType);
+				if(DB_instance == null) {
+					DB_instance = new DBUtils(configFile, dbType);
 				}
 			}
 		}
-		return instance;
+		return DB_instance;
+	}
+	
+	public static DBUtils createInstance(String ip, String port, String instance, String dbType) {
+		if(DB_instance == null) {
+			synchronized (DBUtils.class) {
+				if(DB_instance == null) {
+					DB_instance = new DBUtils(ip, port,instance, dbType);
+				}
+			}
+		}
+		return DB_instance;
 	}
 	
 	private boolean mIsConnected = false;
@@ -63,11 +76,33 @@ public class DBUtils {
 	 */
 	public void connectDB() {
 		try {
-			mConn = DriverManager.getConnection(mUrl, USER_NAME, PWD);
+			checkCondition();
+			
+			mConn = DriverManager.getConnection(mUrl, username, password);
 			mIsConnected = true;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private final void checkCondition() {
+		if(mUrl.equals(""))
+			throw new IllegalStateException("db url is empty");
+		
+		if(mUrl == null)
+			throw new IllegalStateException("db url is empty");
+		
+		if(username.equals(""))
+			throw new IllegalStateException("db access username is empty");
+		
+		if(username == null)
+			throw new IllegalStateException("db access username is empty");
+		
+		if(password.equals(""))
+			throw new IllegalStateException("db access password is empty");
+		
+		if(password == null)
+			throw new IllegalStateException("db access password is empty");
 	}
 	
 	/***

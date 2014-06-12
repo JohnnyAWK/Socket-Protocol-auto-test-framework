@@ -41,8 +41,8 @@ public class PackageTools {
 	public static final byte[] getSubBytes(byte[] src, int startSrcPos, int count) {
 		
 		if((src.length - startSrcPos) < count)
-			throw new IllegalArgumentException("copy bytes count :" + count 
-					+ "bigger than source length: " + src.length);
+			throw new IllegalArgumentException("copy bytes count: " + count 
+					+ " bigger than source length: " + src.length);
 		
 		byte[] bytes = new byte[count];
 		

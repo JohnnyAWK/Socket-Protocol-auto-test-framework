@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -11,6 +12,7 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -96,6 +98,48 @@ public class DefaultExcelParser {
 		}
 		
 		@Override
+		public String[] getRowValues(String sheetName, int rowIndex) throws Exception{
+			XSSFSheet sheet = (XSSFSheet) wb.getSheet(sheetName);
+			
+			final int maxRowNum = getRowsCount(sheet);
+			checkRowIndex(maxRowNum, rowIndex);
+			
+			final XSSFRow row = sheet.getRow(rowIndex - 1);
+			
+			return getRowValuesAndIgnoreBlankCell(row);
+		}
+		
+		@Override
+		public List<String[]> getSheetDatas(String sheetName) throws Exception {
+			XSSFSheet sheet = (XSSFSheet) wb.getSheet(sheetName);
+			
+			List<String[]> dataList = new ArrayList<>();
+			
+			for (Iterator<Row> rowIter = sheet.rowIterator(); rowIter.hasNext();) {
+				Row row = rowIter.next();
+				
+				if(row != null) {
+					dataList.add(getRowValuesAndIgnoreBlankCell(row));
+				}
+			}
+			
+			return dataList;
+		}
+		
+		private int getRowsCount(Sheet sheet) {
+			return sheet.getLastRowNum();
+		}
+		
+		private void checkRowIndex(int maxRowNumber, int index) {
+
+			if(index < 0)
+				throw new IllegalArgumentException("Index must bigger than 0");
+			
+			if((index-1) > maxRowNumber)
+				throw new IllegalArgumentException("the max row number is: " + maxRowNumber);
+		}
+		
+		@Override
 		public ExcelBean getExcelDataBean(String sheetName) {
 			try {
 				return getData(sheetName);
@@ -126,7 +170,7 @@ public class DefaultExcelParser {
 			bean.setArgsList(getArgs(sheet, expectResultIndex));
 			
 			//获取期望结果
-			bean.setExpectList(getExpectValue(sheet, expectResultIndex + 1));
+			bean.setExpectResultList(getExpectValue(sheet, expectResultIndex + 1));
 			
 			return bean;
 		}
@@ -171,11 +215,16 @@ public class DefaultExcelParser {
 		 * @param row 参数名所在行
 		 * @return  参数名构成的数组
 		 */
-		private final String[] getArgsName(Row row) {
-			
+		private final String[] getRowValuesAndIgnoreBlankCell(Row row) {
+
 			String[] args = new String[row.getPhysicalNumberOfCells()];
+			
 			for(int i=0, j=row.getLastCellNum(); i<j; i++){
-				args[i] = getCellValueAndConvertToString(row.getCell(i));
+				
+				String temp = getCellValueAndConvertToString(row.getCell(i));
+				if(temp.equals("")) continue;
+				
+				args[i] = temp;
 			}
 				
 			return args;
@@ -192,7 +241,7 @@ public class DefaultExcelParser {
 			List<HashMap<String, String>> argsList = new ArrayList<>();
 			
 			//获取参数名
-			String[] argName = getArgsName(sheet.getRow(2));
+			String[] argName = getRowValuesAndIgnoreBlankCell(sheet.getRow(2));
 			
 			if(argName == null)
 				throw new Exception("get args name error");
@@ -246,17 +295,25 @@ public class DefaultExcelParser {
 		 * @return 返回单元格的String类型值，否则返回""
 		 */
 		private final String getCellValueAndConvertToString(Cell cell) {
+			String cellValue = "";
+			
 			switch (cell.getCellType()) {
 			
 			case Cell.CELL_TYPE_STRING:
-				return cell.getStringCellValue();
-			
+				cellValue = cell.getStringCellValue();
+				break;
+				
 			case Cell.CELL_TYPE_NUMERIC:
-				return String.valueOf((int)cell.getNumericCellValue());
+				cellValue = String.valueOf((int)cell.getNumericCellValue());
+				
+			case Cell.CELL_TYPE_BLANK:
+				break;
 				
 			default:
-				return "";
+				break;
 			}
+			
+			return cellValue;
 		}
 		
 		/***
@@ -299,6 +356,49 @@ public class DefaultExcelParser {
 		}
 		
 		@Override
+		public String[] getRowValues(String sheetName, int rowIndex) throws Exception{
+			HSSFSheet sheet = (HSSFSheet) wb.getSheet(sheetName);
+			
+			final int maxRowNum = getRowsCount(sheet);
+			checkRowIndex(maxRowNum, rowIndex);
+			
+			//减去1的原因是，从用户的使用习惯来说行号是从1开始的，而getRow是从0开始
+			final HSSFRow row = sheet.getRow(rowIndex - 1);
+			
+			return getRowValuesAndIgnoreBlankCell(row);
+		}
+		
+		@Override
+		public List<String[]> getSheetDatas(String sheetName) throws Exception {
+			HSSFSheet sheet = (HSSFSheet) wb.getSheet(sheetName);
+			
+			List<String[]> dataList = new ArrayList<>();
+			
+			for (Iterator<Row> rowIter = sheet.rowIterator(); rowIter.hasNext();) {
+				Row row = rowIter.next();
+				
+				if(row != null) {
+					dataList.add(getRowValuesAndIgnoreBlankCell(row));
+				}
+			}
+			
+			return dataList;
+		}
+		
+		private int getRowsCount(Sheet sheet) {
+			return sheet.getLastRowNum();
+		}
+		
+		private void checkRowIndex(int maxRowNumber, int index) {
+
+			if(index < 0)
+				throw new IllegalArgumentException("Index must bigger than 0");
+			
+			if((index-1) > maxRowNumber)
+				throw new IllegalArgumentException("the max row number is: " + maxRowNumber);
+		}
+		
+		@Override
 		public ExcelBean getExcelDataBean(String sheetName) {
 			try {
 				return getData(sheetName);
@@ -319,7 +419,7 @@ public class DefaultExcelParser {
 			
 			bean.setArgsList(getArgs(sheet, expectResultIndex));
 			
-			bean.setExpectList(getExpectValue(sheet, expectResultIndex + 1));
+			bean.setExpectResultList(getExpectValue(sheet, expectResultIndex + 1));
 			
 			return bean;
 		}
@@ -349,11 +449,16 @@ public class DefaultExcelParser {
 			}
 		}
 		
-		private final String[] getArgsName(Row row) {
+		private final String[] getRowValuesAndIgnoreBlankCell(Row row) {
 
 			String[] args = new String[row.getPhysicalNumberOfCells()];
+			
 			for(int i=0, j=row.getLastCellNum(); i<j; i++){
-				args[i] = getCellValueAndConvertToString(row.getCell(i));
+				
+				String temp = getCellValueAndConvertToString(row.getCell(i));
+				if(temp.equals("")) continue;
+				
+				args[i] = temp;
 			}
 				
 			return args;
@@ -362,7 +467,7 @@ public class DefaultExcelParser {
 		private final List<HashMap<String, String>> getArgs(HSSFSheet sheet, int index) throws Exception {
 			List<HashMap<String, String>> argsList = new ArrayList<>();
 			
-			String[] argName = getArgsName(sheet.getRow(2));
+			String[] argName = getRowValuesAndIgnoreBlankCell(sheet.getRow(2));
 			
 			if(argName == null)
 				throw new Exception("get args name error");
@@ -404,17 +509,25 @@ public class DefaultExcelParser {
 		}
 		
 		private final String getCellValueAndConvertToString(Cell cell) {
+			String cellValue = "";
+			
 			switch (cell.getCellType()) {
 			
 			case Cell.CELL_TYPE_STRING:
-				return cell.getStringCellValue();
-			
+				cellValue = cell.getStringCellValue();
+				break;
+				
 			case Cell.CELL_TYPE_NUMERIC:
-				return String.valueOf((int)cell.getNumericCellValue());
+				cellValue = String.valueOf((int)cell.getNumericCellValue());
+				
+			case Cell.CELL_TYPE_BLANK:
+				break;
 				
 			default:
-				return "";
+				break;
 			}
+			
+			return cellValue;
 		}
 		
 		private final Workbook openWorkbook(File f) {

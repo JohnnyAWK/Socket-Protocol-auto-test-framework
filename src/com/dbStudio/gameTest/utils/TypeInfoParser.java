@@ -60,7 +60,7 @@ public class TypeInfoParser {
 		logger.setLevel(Level.INFO);
 	}
 	
-	private static final void assertNotNullOrThrowException(Object obj) {
+	private static void assertNotNullOrThrowException(Object obj) {
 		if (obj == null)
 			throw new NullPointerException("obj is null");
 	}
@@ -328,6 +328,28 @@ public class TypeInfoParser {
 			return EmptyContainer.EMPTY_MAP;
 		}
 		
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static List<Map<Object, Object>> getObjectArraysItemFields(Object[] objArray) throws Exception {
+		List<Map<Object, Object>> fields = new ArrayList<>();
+		
+		for (Object temp : objArray) {
+			
+			if(TypeInfoParser.isMap(temp)) {
+				fields.add((Map<Object, Object>) temp);
+				continue;
+			}
+			else {
+				Map<Object, Object> tempItem = getObjectFileds(temp);
+				if(!tempItem.isEmpty()) {
+					fields.add(tempItem);
+				}
+			}
+	
+		}
+		
+		return fields;
 	}
 	
 }

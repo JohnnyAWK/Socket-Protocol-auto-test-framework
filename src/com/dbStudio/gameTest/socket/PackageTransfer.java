@@ -25,7 +25,7 @@ public class PackageTransfer{
 
 	private byte[] buffer;
 	
-	private static final int BUF_SIZE = 1024 * 8;
+	private static final int BUF_SIZE = 1024 * 8; //8K
 	
 	private final ConcurrentLinkedQueue<byte[]> handledQueue;
 	
@@ -47,7 +47,11 @@ public class PackageTransfer{
 	}
 	
 	private final void checkPort(int port) {
-		if (port < 1024 || port > 65535)
+		if (port < 1024)
+			throw new IllegalArgumentException(
+					"port must between 1024 and 65535");
+		
+		if(port > 65535) 
 			throw new IllegalArgumentException(
 					"port must between 1024 and 65535");
 	}

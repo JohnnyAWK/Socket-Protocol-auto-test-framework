@@ -31,7 +31,7 @@ public class DefaultRunner {
 	
 	private IPackageContenParser mContentParser;
 	
-	public Map<Integer, Object> pkgsCache;
+	private Map<Integer, Object> pkgsCache;
 	
 	private DefaultRunner(){
 		pkgsCache = new HashMap<>();
@@ -42,7 +42,7 @@ public class DefaultRunner {
 	 * @param config 配置文件全路径
 	 */
 	public final void loadConfig(String config) {
-		ConfigManager cfg = ConfigManager.getCongfig(new File(config));
+		ConfigManager cfg = ConfigManager.getCongfigManager(new File(config));
 		
 		ip = cfg.get("ip");
 		port = Integer.parseInt(cfg.get("port"));
@@ -197,13 +197,8 @@ public class DefaultRunner {
 	 * @return 解码后的数据
 	 */
 	public Object getDataOrBlocking(Integer cmd) {
-		Object ret = null;
-		if( (ret = receiveDataOrBlocking(cmd)) != null ) {
-			return ret;
-		}
-		else {
-			return isCached(cmd)? getFromCache(cmd) : null;
-		}
+
+		return receiveDataOrBlocking(cmd);
 	}
 	
 	/***

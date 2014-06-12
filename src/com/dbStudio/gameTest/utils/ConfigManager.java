@@ -1,4 +1,4 @@
-﻿package com.dbStudio.gameTest.utils;
+package com.dbStudio.gameTest.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,14 +7,14 @@ import java.util.Properties;
 
 public final class ConfigManager {
 	/**女妖测试服IP*/
-	public final static String NVYAO_TEST_SERVER_IP_ADD = ;
+	public final static String NVYAO_TEST_SERVER_IP_ADD = "115.238.230.19";
 	/**女妖测试服端口*/
-	public final static int NVYAO_TEST_SERVER_PORT = ;
+	public final static int NVYAO_TEST_SERVER_PORT = 48020;
 	
 	/**七雄线上服地址*/
-	public final static String SEVEN_Q_ONLINE_SERVER = ;
+	public final static String SEVEN_Q_ONLINE_SERVER = "7q.login.game.uc.cn";
 	/**七雄线上服端口*/
-	public final static int SEVEN_Q_ONLINE_SERVER_PORT = ;
+	public final static int SEVEN_Q_ONLINE_SERVER_PORT = 8002;
 	
 	private final File configFile;
 	
@@ -29,7 +29,7 @@ public final class ConfigManager {
 		loadConfig();
 	}
 	
-	public static ConfigManager getCongfig(File file) {
+	public static ConfigManager getCongfigManager(File file) {
 		return new ConfigManager(file);
 	}
 	

@@ -97,7 +97,7 @@ public class NvyaoProtocol implements IProtocol{
 			if(u16.length != 2)
 				throw new IllegalArgumentException("param length is not 2");
 			
-			return (int) BytesConvertUtil.byte2Short(u16);
+			return BytesConvertUtil.byte2Short(u16);
 		}
 		
 		/**u32 => int*/
@@ -127,6 +127,31 @@ public class NvyaoProtocol implements IProtocol{
 				e.printStackTrace();
 				return new String(bytes);
 			}		
+		}
+		
+		/***
+		 * 解析Bin类型，该类型主要在战斗中由服务器主动推送
+		 * @param binBytes Bin类型的字节数组
+		 * @return NvyaoBinType类型，该类型是一个Bean
+		 * @throws 当传递的字节数组的长度不是17时，抛出IllegalArgumentException异常
+		 */
+		public static NvyaoBinType parserBin(byte[] binBytes) {
+			if(binBytes.length != 17) 
+				throw new IllegalArgumentException("array lenth must be 17, but now the length is: " 
+			+ binBytes.length);
+			
+			NvyaoBinType bin = new NvyaoBinType();
+			
+			bin.BuffNo = parserU32(PackageTools.getSubBytes(binBytes, 0, 4));
+			bin.ExpireRound = (short)parserU16(PackageTools.getSubBytes(binBytes, 4, 2));
+			bin.OverlapCount = binBytes[6];
+			
+			bin.Para1_Type = binBytes[7];
+			bin.Para1_Value = parserU32(PackageTools.getSubBytes(binBytes, 8, 4));
+			bin.Para2_Type = binBytes[12];
+			bin.Para2_Value = parserU32(PackageTools.getSubBytes(binBytes, 13, 4));
+			
+			return bin;
 		}
 		
 		/**获取byte中前2个字节所表示的String长度*/
@@ -365,5 +390,68 @@ public class NvyaoProtocol implements IProtocol{
 			
 	}
 	
+	public static final class NvyaoBinType{
+		/**buff编号，如果为0，表明这是为了容错（出bug了，或者buff所属的bo死亡消失了，但要保持协议二进制流格式的正确性）而填充的伪buff详情，客户端应该忽略它*/
+		private int BuffNo;
+		/**buff的到期回合（表示buff到了该回合即过期）， 若是永久性buff（战斗结束或死亡后才移除），则返回一个比较大的数值（大于9999）*/
+		private short ExpireRound;
+		/**buff当前的叠加层数（不可叠加的buff固定返回1），对于护盾类buff，表示护盾剩余的层数*/
+		private byte OverlapCount;
+		
+		/**如果buff不可叠加，则以下都统一返回0*/
+		
+		/**buff参数1的类型（0:表示参数无意义，1：整数，2：百分比。下同）*/
+		private byte Para1_Type;
+		/**buff参数1的值（如果是百分比，则返回的是一个放大100倍后的整数，比如：0.32对应返回的是32，下同）*/
+		private int Para1_Value;
+		/**buff参数2的类型*/
+		private byte Para2_Type;
+		/** buff参数2的值*/
+		private int Para2_Value;
+		
+		public int getBuffNo() {
+			return BuffNo;
+		}
+		public void setBuffNo(int buffNo) {
+			BuffNo = buffNo;
+		}
+		public short getExpireRound() {
+			return ExpireRound;
+		}
+		public void setExpireRound(short expireRound) {
+			ExpireRound = expireRound;
+		}
+		public byte getOverlapCount() {
+			return OverlapCount;
+		}
+		public void setOverlapCount(byte overlapCount) {
+			OverlapCount = overlapCount;
+		}
+		public byte getPara1_Type() {
+			return Para1_Type;
+		}
+		public void setPara1_Type(byte para1_Type) {
+			Para1_Type = para1_Type;
+		}
+		public int getPara1_Value() {
+			return Para1_Value;
+		}
+		public void setPara1_Value(int para1_Value) {
+			Para1_Value = para1_Value;
+		}
+		public byte getPara2_Type() {
+			return Para2_Type;
+		}
+		public void setPara2_Type(byte para2_Type) {
+			Para2_Type = para2_Type;
+		}
+		public int getPara2_Value() {
+			return Para2_Value;
+		}
+		public void setPara2_Value(int para2_Value) {
+			Para2_Value = para2_Value;
+		}
+		
+	}
 	
 }

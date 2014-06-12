@@ -14,11 +14,11 @@ import com.dbStudio.gameTest.utils.PackageTools;
 import com.dbStudio.gameTest.utils.TypeInfoParser;
 
 public class SevenQProtocol implements IProtocol {
-	
+	/**包头长度*/
 	static final int PACKAGE_HEAD_LENGTH = 4;
-	
+	/**压缩为长度*/
 	static final int COMPRESS_FLAG_LENGTH = 1;
-	
+	/**数据段的起始索引*/
 	static final int DATA_START_INDEX = PACKAGE_HEAD_LENGTH + COMPRESS_FLAG_LENGTH;
 
 	public SevenQProtocol() {
@@ -49,7 +49,12 @@ public class SevenQProtocol implements IProtocol {
 		return decodeToMap(recBytes);
 		
 	}
-
+	
+	/***
+	 * 解码成Map
+	 * @param recBytes
+	 * @return Map<Object, Object>
+	 */
 	private final Map<Object, Object> decodeToMap(byte[] recBytes) {
 		try {
 			byte[] data = PackageTools.getSubBytes(recBytes, DATA_START_INDEX, 
@@ -116,7 +121,10 @@ public class SevenQProtocol implements IProtocol {
 		public int getProtocolHeadLength() {
 			return PACKAGE_HEAD_LENGTH;
 		}
-
+		
+		/***
+		 * 获取协议体长度
+		 */
 		@Override
 		public int getProtocolBodyLength(byte[] head) {
 			return BytesConvertUtil.byte2Int(head);
